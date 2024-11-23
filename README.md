@@ -4,7 +4,7 @@ Panther Path helps users navigate campus efficiently. The app requires a Python 
 
 ## Requirements
 
-- **Python 3.x**
+- **Python 3.11.5**
 - **SQLite3** (included with Python)
 - Python server must be running in the background.
 
