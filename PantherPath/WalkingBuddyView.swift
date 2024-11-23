@@ -1,6 +1,6 @@
 //
 //  WalkingBuddyView.swift
-//  GSHacks
+//  PantherPath
 //
 //  Created by Linn on 11/22/24.
 //
@@ -19,7 +19,9 @@ struct WalkingBuddyView: View {
     @State private var lastRequest: GetRequestResponse?
     @State private var errorMessage: String?
     @State private var showBuddyRequest = false // Controls showing BuddyRequest view
+    @State private var navigateToRoot = false
 
+    
     init(showWalkingBuddyView: Binding<Bool>, campusID: String) {
         self._showWalkingBuddyView = showWalkingBuddyView
         self._campusID = State(initialValue: campusID)
@@ -88,6 +90,10 @@ struct WalkingBuddyView: View {
                                     .cornerRadius(10)
                             }
                             .padding(.horizontal)
+                            
+                            NavigationLink(value: navigateToRoot) {
+                                EmptyView() // Empty view is used as the trigger for navigation
+                            }
                         }
             .navigationTitle("Walking Buddy")
             .onAppear {
