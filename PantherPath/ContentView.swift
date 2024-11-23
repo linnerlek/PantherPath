@@ -11,6 +11,7 @@ import UIKit
 
 struct ContentView: View {
     @State private var showLogin = false
+    @State private var showSOS = false
     @State private var menuHeight: CGFloat = UIScreen.main.bounds.height * 0.2 // Initial menu height (20%)
     @State private var maxHeight: CGFloat = UIScreen.main.bounds.height * 0.9 // 90% of screen height
     @State private var minHeight: CGFloat = UIScreen.main.bounds.height * 0.1 // 10% of screen height
@@ -67,7 +68,11 @@ struct ContentView: View {
                             HStack(spacing: 0) {
                                 MenuButtonLabel(title: "Parking Spot Tracker")
                                 
-                                MenuButtonLabel(title: "SOS")
+                                Button(action: {
+                                    showSOS = true // Show SOS view
+                                }) {
+                                    MenuButtonLabel(title: "SOS")
+                                }
                             }
                         }
                     }
@@ -86,6 +91,9 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $showLogin) {
             LoginView(showLogin: $showLogin)
+        }
+        .fullScreenCover(isPresented: $showSOS) {
+                    EmergencyView() // Present the emergency view when SOS is tapped
         }
     }
 }
