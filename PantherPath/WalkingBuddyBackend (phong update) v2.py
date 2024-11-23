@@ -1,63 +1,74 @@
 #
-//  WalkingBuddyBackend.py
-//  PantherPath
-//
-//  Created by ethan ngo on 11/23/24.
-//
+#  WalkingBuddyBackend.py
+#  PantherPath
+#
+#  Created by ethan ngo on 11/23/24.
+#
+
+# WalkingBuddyBackend.py
 
 from flask import Flask, request, jsonify
-from flaskcors import CORS
+from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests for Swift
 
-#Initialize the database
+# Initialize the database
 def initdb():
     conn = sqlite3.connect('walkingbuddy.db')
     c = conn.cursor()
+    # Drop the existing table (for debugging, remove this in production)
+    c.execute('DROP TABLE IF EXISTS requests')
     c.execute('''
-        CREATE TABLE IF NOT EXISTS requests (
+        CREATE TABLE requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            campusid TEXT NOT NULL,
+            campus_id TEXT NOT NULL,
             from_location TEXT NOT NULL,
-            to_location TEXT NOT NULL,
-            wait_time TEXT NOT NULL
+            to_location TEXT NOT NULL
         )
     ''')
     conn.commit()
     conn.close()
 
+# Request Buddy route (POST)
 @app.route('/request-buddy', methods=['POST'])
 def request_buddy():
-    data = request.json
-    campus_id = data['campusID']
-    from_location = data['fromLocation']
-    to_location = data['toLocation']
+    try:
+        data = request.json
+        print(f"Request data: {data}")  # Debugging
 
-    # Simulate wait time logic (improve this later w the updated passiogo functions / fetches)
-    wait_time = "5 minutes"
+        campus_id = data['campusID']
+        from_location = data['fromLocation']
+        to_location = data['toLocation']
 
-    # Save to the database
-    conn = sqlite3.connect('walking_buddy.db')
-    c = conn.cursor()
-    c.execute('''
-        INSERT INTO requests (campus_id, from_location, to_location, wait_time)
-        VALUES (?, ?, ?, ?)
-    ''', (campus_id, from_location, to_location, wait_time))
-    conn.commit()
-    conn.close()
+        # Save to the database
+        conn = sqlite3.connect('walkingbuddy.db')
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO requests (campus_id, from_location, to_location)
+            VALUES (?, ?, ?)
+        ''', (campus_id, from_location, to_location))
+        conn.commit()
+        conn.close()
 
-    return jsonify({"message": "Buddy requested", "waitTime": wait_time})
+        response = {"message": "Buddy requested", "waitTime": "5 minutes"}
+        print(f"Response: {response}")  # Debugging
+        return jsonify(response), 200
+    except Exception as e:
+        print(f"Error: {e}")  # Debugging
+        return jsonify({"message": "Failed to request buddy", "error": str(e)}), 500
 
+# Get the last request route (GET)
 @app.route('/get-request', methods=['GET'])
 def get_request():
     campus_id = request.args.get('campusID')
-    
-    conn = sqlite3.connect('walking_buddy.db')
+    print(f"Received campusID: {campus_id}")  # Debugging
+
+    conn = sqlite3.connect('walkingbuddy.db')
     c = conn.cursor()
     c.execute('''
-        SELECT from_location, to_location, wait_time 
+        SELECT from_location, to_location 
         FROM requests 
         WHERE campus_id = ?
         ORDER BY id DESC LIMIT 1
@@ -66,14 +77,43 @@ def get_request():
     conn.close()
 
     if result:
+        print(f"Query result: {result}")  # Debugging
         return jsonify({
             "fromLocation": result[0],
             "toLocation": result[1],
-            "waitTime": result[2]
-        })
+            "waitTime": "5 minutes"  # Static wait time
+        }), 200
     else:
+        print("No request found.")  # Debugging
         return jsonify({"message": "No previous requests found"}), 404
 
-if __name == '__main':
-    init_db()
+# Remove Buddy from Queue route (POST)
+@app.route('/remove-buddy', methods=['POST'])
+def remove_buddy():
+    try:
+        data = request.json
+        print(f"Remove buddy data: {data}")  # Debugging
+
+        from_location = data['fromLocation']
+        to_location = data['toLocation']
+
+        # Remove the request from the database
+        conn = sqlite3.connect('walkingbuddy.db')
+        c = conn.cursor()
+        c.execute('''
+            DELETE FROM requests 
+            WHERE from_location = ? AND to_location = ?
+        ''', (from_location, to_location))
+        conn.commit()
+        conn.close()
+
+        response = {"message": "Buddy request removed"}
+        print(f"Response: {response}")  # Debugging
+        return jsonify(response), 200
+    except Exception as e:
+        print(f"Error: {e}")  # Debugging
+        return jsonify({"message": "Failed to remove buddy", "error": str(e)}), 500
+
+if __name__ == '__main__':
+    initdb()  # Initialize the database
     app.run(debug=True)
