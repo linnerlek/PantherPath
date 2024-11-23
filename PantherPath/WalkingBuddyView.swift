@@ -10,8 +10,8 @@ import SwiftUI
 struct WalkingBuddyView: View {
     @Binding var showWalkingBuddyView: Bool
     @State private var fromLocation = "Library"
-    @State private var toLocation = "Gym"
-    @State private var locations = ["Library", "Gym", "Dining Hall", "Parking Deck", "Residence Hall"]
+    @State private var toLocation = "Parking Deck"
+    @State private var locations = ["Library", "Gym", "Dining Hall", "Parking Deck", "Dorms"]
     @State private var buddyRequested = false
     
     var body: some View {

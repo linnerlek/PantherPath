@@ -9,14 +9,14 @@ import SwiftUI
 
 struct MenuButtonLabel: View {
     var title: String
-    
     var body: some View {
         Text(title)
+            .font(.title2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding()
-            .background(Color.gsuBlue)
+            .background(Color("GSUBlue")) // Use correct color asset
             .foregroundColor(.white)
-            .font(.headline)
+            .cornerRadius(10)
+            .padding(5) // Adjust padding as needed
     }
 }
 
