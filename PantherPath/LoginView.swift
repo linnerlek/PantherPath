@@ -1,6 +1,6 @@
 //
 //  LoginView.swift
-//  GSHacks
+//  PantherPath
 //
 //  Created by Linn on 11/22/24.
 //
