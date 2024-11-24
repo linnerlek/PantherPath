@@ -25,9 +25,17 @@ def get_train_info():
             all_trains = response.json()
 
             # Filter trains stopping at "Georgia State Station"
-            filtered_trains = [
-                train for train in all_trains
-                if "GEORGIA STATE STATION" in train["STATION"].upper()
+            filtered_trains = [ #FIltered parameters
+                {
+                    "DESTINATION": train.get("DESTINATION"),
+                    "DIRECTION": train.get("DIRECTION"),
+                    "EVENT_TIME": train.get("EVENT_TIME"),
+                    "LINE": train.get("LINE"),
+                    "NEXT_ARR": train.get("NEXT_ARR"),
+                    "WAITING_TIME": train.get("WAITING_TIME")
+                }
+                for train in all_trains
+                if "GEORGIA STATE STATION" in train.get("STATION", "").upper() #Checks if the train is stopping at "Georgia State Station"
             ]
             
             #Returns message if no trains routes are running.
