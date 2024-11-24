@@ -5,7 +5,6 @@
 #  Created by ethan ngo on 11/23/24.
 #
 
-# WalkingBuddyBackend.py
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -114,6 +113,5 @@ def remove_buddy():
         print(f"Error: {e}")  # Debugging
         return jsonify({"message": "Failed to remove buddy", "error": str(e)}), 500
 
-if __name__ == '__main__':
-    initdb()  # Initialize the database
-    app.run(debug=True)
+
+initdb()  # Initialize the database
