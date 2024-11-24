@@ -18,13 +18,20 @@ struct GetRequestResponse: Codable {
     let waitTime: String
 }
 
+struct Train: Identifiable, Codable {
+    var id: String
+    var station: String
+    var arrivalTime: String
+}
+
+
 class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
 
     // Request a Buddy
     func requestBuddy(campusID: String, fromLocation: String, toLocation: String, completion: @escaping (String?) -> Void) {
-        guard let url = URL(string: "http://127.0.0.1:5000/request-buddy") else {
+        guard let url = URL(string: "http://127.0.0.1:5002/request-buddy") else {
             print("Invalid URL for requesting a buddy.")
             completion(nil)
             return
@@ -73,7 +80,7 @@ class NetworkManager {
 
     // Get Last Buddy Request
     func getLastRequest(campusID: String, completion: @escaping (GetRequestResponse?) -> Void) {
-        guard let url = URL(string: "http://127.0.0.1:5000/get-request?campusID=\(campusID)") else {
+        guard let url = URL(string: "http://127.0.0.1:5002/get-request?campusID=\(campusID)") else {
             print("Invalid URL for retrieving last request.")
             completion(nil)
             return
@@ -105,7 +112,7 @@ class NetworkManager {
 
     // Remove Buddy from Queue
     func removeBuddyFromQueue(fromLocation: String, toLocation: String, completion: @escaping (Bool, Error?) -> Void) {
-        guard let url = URL(string: "http://127.0.0.1:5000/remove-buddy") else {
+        guard let url = URL(string: "http://127.0.0.1:5002/remove-buddy") else {
             print("Invalid URL for removing buddy.")
             completion(false, nil)
             return
@@ -146,4 +153,40 @@ class NetworkManager {
             completion(success, nil)
         }.resume()
     }
+    
+    // Fetch MARTA train data
+    func getTrainInfo(destination: String, completion: @escaping (Result<[Train], Error>) -> Void) {
+            guard let url = URL(string: "http://127.0.0.1:5001/get-train-info?destination=\(destination)") else {
+                print("Invalid URL for getting train info.")
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    print("Error making request: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+
+                guard let data = data else {
+                    print("No data received from server.")
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode([Train].self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("Failed to decode response: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }.resume()
+        }
+}
+
+enum NetworkError: Error {
+    case invalidURL
+    case noData
 }

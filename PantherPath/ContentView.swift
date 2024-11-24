@@ -12,6 +12,7 @@ import UIKit
 struct ContentView: View {
     @State private var showLogin = false
     @State private var showSOS = false
+    @State private var showMartaView = false
     @State private var menuHeight: CGFloat = UIScreen.main.bounds.height * 0.2 // Initial menu height (20%)
     @State private var maxHeight: CGFloat = UIScreen.main.bounds.height * 0.9 // 90% of screen height
     @State private var minHeight: CGFloat = UIScreen.main.bounds.height * 0.1 // 10% of screen height
@@ -29,7 +30,7 @@ struct ContentView: View {
                 WebView(url: URL(string: "https://gsu.passiogo.com/?zoom=14.3&lat=33.746852&lng=-84.387904")!, isLoading: $isLoading)
                     .frame(width: geometry.size.width, height: geometry.size.height - menuHeight + 20)
                     .clipped() // Ensures content fits within calculated frame
-                
+
                 VStack(spacing: 0) {
                     Spacer() // Push menu to the bottom
 
@@ -53,7 +54,7 @@ struct ContentView: View {
                                     }
                             )
 
-                        // Menu buttons without extra frame modifiers
+                        // Menu buttons
                         VStack(spacing: 0) {
                             HStack(spacing: 0) {
                                 Button(action: {
@@ -62,11 +63,16 @@ struct ContentView: View {
                                     MenuButtonLabel(title: "Walking Buddy")
                                 }
                                 
-                                MenuButtonLabel(title: "MARTA")
+                                Button(action: {
+                                    showMartaView = true
+                                }) {
+                                    MenuButtonLabel(title: "MARTA for GSU")
+                                }
                             }
-                            
+
                             HStack(spacing: 0) {
                                 MenuButtonLabel(title: "Parking Spot Tracker")
+                                    .disabled(true) // Makes this label non-interactive
                                 
                                 Button(action: {
                                     showSOS = true // Show SOS view
@@ -93,7 +99,10 @@ struct ContentView: View {
             LoginView(showLogin: $showLogin)
         }
         .fullScreenCover(isPresented: $showSOS) {
-                    EmergencyView() // Present the emergency view when SOS is tapped
+            EmergencyView() // Present the emergency view when SOS is tapped
+        }
+        .fullScreenCover(isPresented: $showMartaView) {
+            MartaView() // Present MartaView when button is tapped
         }
     }
 }
@@ -104,7 +113,7 @@ struct LoadingOverlay: View {
         ZStack {
             Color("GSUBlue") // Full GSUBlue screen
                 .edgesIgnoringSafeArea(.all)
-            
+
             VStack {
                 Text("Loading...")
                     .font(.headline)
@@ -156,6 +165,10 @@ struct WebView: UIViewRepresentable {
     }
 }
 
-#Preview {
-    ContentView()
+// Preview
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
+

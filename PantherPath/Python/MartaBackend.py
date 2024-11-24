@@ -5,7 +5,6 @@
 #  Created by ethan ngo on 11/23/24.
 #
 
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
@@ -27,34 +26,31 @@ def get_train_info():
     if not destination:
         return jsonify({"error": "Please provide a destination as a query parameter."}), 400
 
-    # Only support 'Georgia State University' as the destination
     if destination == "georgia state university":
-        try:
-            response = requests.get(MARTA_API_URL, params={'apiKey': API_KEY})
-            
-            # Check if the request was successful
-            if response.status_code == 200:
-                all_trains = response.json()
-                
-                # Filter trains stopping at "Georgia State Station"
-                filtered_trains = [
-                    train for train in all_trains
-                    if "GEORGIA STATE STATION" in train.get("STATION", "").upper()
-                ]
-                
-                print("MARTA API Response GSU:", filtered_trains)
-                
-                # Returns message if no train routes are running
-                if not filtered_trains:
-                    return jsonify({"message": "Currently no trains stopping right now."})
-                
-                return jsonify(filtered_trains)
-            else:
-                return jsonify({"error": f"API request failed with status code {response.status_code}"}), 500
-        
-        except requests.RequestException as e:
-            # Catch any errors with the API request and return an error message
-            return jsonify({"error": f"Failed to fetch data from MARTA API: {str(e)}"}), 500
+        response = requests.get(MARTA_API_URL, params={'apiKey': API_KEY})
+        if response.status_code == 200:
+            all_trains = response.json()
 
+            # Filter trains stopping at "Georgia State Station"
+            filtered_trains = [ #FIltered parameters
+                {
+                    "DESTINATION": train.get("DESTINATION"),
+                    "DIRECTION": train.get("DIRECTION"),
+                    "EVENT_TIME": train.get("EVENT_TIME"),
+                    "LINE": train.get("LINE"),
+                    "NEXT_ARR": train.get("NEXT_ARR"),
+                    "WAITING_TIME": train.get("WAITING_TIME")
+                }
+                for train in all_trains
+                if "GEORGIA STATE STATION" in train.get("STATION", "").upper() #Checks if the train is stopping at "Georgia State Station"
+            ]
+            
+            #Returns message if no trains routes are running.
+            if not filtered_trains:
+                return jsonify({"message": "Currently no trains stopping right now."})
+            
+            return jsonify(filtered_trains)
+        else:
+            return jsonify({"error": f"API request failed with status code {response.status_code}"}), 500
     else:
         return jsonify({"error": "This app currently only supports 'Georgia State University' as the destination."}), 400
