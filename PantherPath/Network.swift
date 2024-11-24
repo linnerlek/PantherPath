@@ -19,9 +19,24 @@ struct GetRequestResponse: Codable {
 }
 
 struct Train: Identifiable, Codable {
-    var id: String
+    var id: String { station }  // Using station as the unique identifier
     var station: String
-    var arrivalTime: String
+    var destination: String
+    var direction: String
+    var eventTime: String
+    var line: String
+    var nextArr: String
+    var waitingTime: String
+    
+    enum CodingKeys: String, CodingKey {
+        case station = "STATION"
+        case destination = "DESTINATION"
+        case direction = "DIRECTION"
+        case eventTime = "EVENT_TIME"
+        case line = "LINE"
+        case nextArr = "NEXT_ARR"
+        case waitingTime = "WAITING_TIME"
+    }
 }
 
 
@@ -156,34 +171,40 @@ class NetworkManager {
     
     // Fetch MARTA train data
     func getTrainInfo(destination: String, completion: @escaping (Result<[Train], Error>) -> Void) {
-            guard let url = URL(string: "http://127.0.0.1:5001/get-train-info?destination=\(destination)") else {
-                print("Invalid URL for getting train info.")
-                completion(.failure(NetworkError.invalidURL))
+        guard let url = URL(string: "http://127.0.0.1:5001/get-train-info?destination=\(destination)") else {
+            print("Invalid URL for getting train info.")
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error making request: \(error.localizedDescription)")
+                completion(.failure(error))
                 return
             }
 
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    print("Error making request: \(error.localizedDescription)")
-                    completion(.failure(error))
-                    return
-                }
+            guard let data = data else {
+                print("No data received from server.")
+                completion(.failure(NetworkError.noData))
+                return
+            }
 
-                guard let data = data else {
-                    print("No data received from server.")
-                    completion(.failure(NetworkError.noData))
-                    return
-                }
+            // Print raw JSON data for debugging
+            if let json = try? JSONSerialization.jsonObject(with: data, options: []) {
+                print("Raw JSON response: \(json)")
+            }
 
-                do {
-                    let response = try JSONDecoder().decode([Train].self, from: data)
-                    completion(.success(response))
-                } catch {
-                    print("Failed to decode response: \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
-            }.resume()
-        }
+            do {
+                let response = try JSONDecoder().decode([Train].self, from: data)
+                completion(.success(response))
+            } catch {
+                print("Failed to decode response: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
 }
 
 enum NetworkError: Error {

@@ -18,6 +18,13 @@ API_KEY = 'd5b7aae1-1c03-4a7e-874b-caf3b8e19c4b'
 # MARTA API URL endpoint for real-time train arrival data
 MARTA_API_URL = "https://developerservices.itsmarta.com:18096/itsmarta/railrealtimearrivals/traindata"
 
+# List of nearby stations
+NEARBY_STATIONS = [
+    "GEORGIA STATE STATION",
+    "FIVE POINTS STATION",
+    "PEACHTREE CENTER STATION"
+]
+
 @app.route('/get-train-info', methods=['GET'])
 def get_train_info():
     destination = request.args.get('destination', '').lower()
@@ -31,9 +38,10 @@ def get_train_info():
         if response.status_code == 200:
             all_trains = response.json()
 
-            # Filter trains stopping at "Georgia State Station"
-            filtered_trains = [ #FIltered parameters
+            # Filter trains stopping at Georgia State Station or nearby stations
+            filtered_trains = [
                 {
+                    "STATION": train.get("STATION"),
                     "DESTINATION": train.get("DESTINATION"),
                     "DIRECTION": train.get("DIRECTION"),
                     "EVENT_TIME": train.get("EVENT_TIME"),
@@ -42,12 +50,14 @@ def get_train_info():
                     "WAITING_TIME": train.get("WAITING_TIME")
                 }
                 for train in all_trains
-                if "GEORGIA STATE STATION" in train.get("STATION", "").upper() #Checks if the train is stopping at "Georgia State Station"
+                if any(
+                    station in train.get("STATION", "").upper() for station in NEARBY_STATIONS
+                )
             ]
             
-            #Returns message if no trains routes are running.
+            # Return a message if no trains are running at Georgia State or nearby stations
             if not filtered_trains:
-                return jsonify({"message": "Currently no trains stopping right now."})
+                return jsonify({"message": "Currently no trains stopping at Georgia State or nearby stations."})
             
             return jsonify(filtered_trains)
         else:
