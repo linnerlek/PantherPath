@@ -16,12 +16,14 @@ Panther Path is a dynamic app designed to help users navigate Georgia State Univ
 ```bash
 git clone https://github.com/linnerlek/PantherPath
 ```
-
-2. Start the server:
+2. Navigate to the project directory
 ```bash
-Python/python3 app.py
+cd PantherPath/PantherPath
+```
+4. Start the server:
+```bash
+python3 Python/app.py
 ```
 
 ## Usage
-Keep the Python server running while using the app for data processing and functionality.
-            
+As long as the Python server is running the app should function as expected after building it in xcode. 
